@@ -74,7 +74,9 @@ export default function MobileCall() {
 
   return (
     <div className="mobile-call">
-      <video ref={remoteRef} autoPlay playsInline className="remote" />
+      <div className="remote-container">
+        <video ref={remoteRef} autoPlay playsInline className="remote" />
+      </div>
       <video ref={localRef} autoPlay muted playsInline className="local" />
 
       <Controls
