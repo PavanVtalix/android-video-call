@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { socket } from "../services/socket";
 import { createPeerConnection } from "../webrtc/peer";
 import Controls from "../components/Controls";
@@ -14,6 +14,9 @@ export default function MobileCall() {
   const peerRef = useRef(null);
 
   const [chatOpen, setChatOpen] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [videoEnabled, setVideoEnabled] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     socket.connect();
@@ -72,16 +75,53 @@ export default function MobileCall() {
     };
   }, [roomId]);
 
+  const toggleMute = () => {
+    const stream = streamRef.current;
+    if (!stream) return;
+    stream.getAudioTracks().forEach(t => (t.enabled = !muted));
+    setMuted(m => !m);
+  };
+
+  const toggleVideo = () => {
+    const stream = streamRef.current;
+    if (!stream) return;
+    stream.getVideoTracks().forEach(t => (t.enabled = !videoEnabled));
+    setVideoEnabled(v => !v);
+  };
+
+  const endCall = () => {
+    try {
+      peerRef.current?.close();
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      socket.disconnect();
+    } catch (e) {
+      console.warn('Error ending call', e);
+    }
+    try { navigate(-1); } catch (e) { /* ignore */ }
+  };
+
+  // Prevent body scrolling while on the mobile call screen
+  useEffect(() => {
+    document.body.classList.add("no-scroll");
+    return () => {
+      document.body.classList.remove("no-scroll");
+    };
+  }, []);
+
   return (
     <div className="mobile-call">
       <div className="remote-container">
         <video ref={remoteRef} autoPlay playsInline className="remote" />
       </div>
-      <video ref={localRef} autoPlay muted playsInline className="local" />
+      <video ref={localRef} autoPlay muted={muted} playsInline className="local" />
 
       <Controls
         onChat={() => setChatOpen(true)}
-        onEnd={() => window.close()}
+        onEnd={endCall}
+        onToggleMute={toggleMute}
+        onToggleVideo={toggleVideo}
+        muted={muted}
+        videoEnabled={videoEnabled}
       />
 
       <ChatDrawer open={chatOpen} onClose={() => setChatOpen(false)} />

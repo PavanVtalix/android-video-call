@@ -3,6 +3,8 @@
   height: 100vh;
   background: black;
   position: relative;
+  overflow: hidden;
+  touch-action: none;
 }
 
 /* Container that enforces a desktop-like aspect ratio (16:9) on mobile screens */
@@ -14,6 +16,7 @@
   align-items: center;
   justify-content: center;
   background: black;
+  touch-action: none;
 }
 
 /* Prefer native aspect-ratio when available */
@@ -52,24 +55,42 @@
   height: 160px;
   border-radius: 10px;
   border: 2px solid white;
+  z-index: 50;
 }
 
+/* Controls fixed to bottom so no scrolling is required to reach them */
 .mobile-controls {
-  position: absolute;
+  position: fixed;
   bottom: 0;
+  left: 0;
   width: 100%;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 12px;
   padding: 12px;
-  background: rgba(0,0,0,0.8);
+  background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.85));
+  align-items: center;
+  z-index: 40;
+  box-sizing: border-box;
 }
 
 .mobile-controls button {
   color: white;
+  background: rgba(30,30,30,0.9);
+  border: none;
+  padding: 10px 14px;
+  min-width: 72px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.mobile-controls button:active {
+  transform: translateY(1px);
 }
 
 .mobile-controls .end {
-  background: red;
+  background: #e02424;
+  color: white;
 }
 
 .chat-drawer {
@@ -79,4 +100,11 @@
   height: 50%;
   background: #111;
   color: white;
+}
+
+/* Disable scrolling globally when MobileCall mounts (class toggled on body) */
+.no-scroll {
+  overflow: hidden !important;
+  height: 100vh !important;
+  touch-action: none !important;
 }
