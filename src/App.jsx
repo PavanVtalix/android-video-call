@@ -1,19 +1,16 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import JoinRoom from "./pages/JoinRoom";
+import { Routes, Route, HashRouter } from "react-router-dom";
 import MobileCall from "./pages/MobileCall";
-// import { isMobile } from "./utils/isMobile";
+import JoinRoom from "./pages/JoinRoom";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
-        {/* Join page for manual room entry */}
         <Route path="/" element={<JoinRoom />} />
-
-        {/* Video call */}
-        <Route path="/call/:roomId" element={<MobileCall />} />
+        {/* <Route path="/call/:roomId" element={<MobileCall />} /> */}
+        <Route path="/call/:appointmentId/:roomId/:socketId" element={<MobileCall />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
