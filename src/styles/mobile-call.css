@@ -27,6 +27,40 @@ body,
   justify-content: center;
   padding: 22px 14px 150px;
   box-sizing: border-box;
+  background: #000;
+}
+
+.status-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-icon.muted {
+  background: rgba(239, 68, 68, 0.8);
+  padding: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.video-off-placeholder {
+  position: absolute;
+  inset: 0;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  z-index: 5;
 }
 
 .remote {

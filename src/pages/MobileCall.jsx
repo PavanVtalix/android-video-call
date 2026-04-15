@@ -595,6 +595,12 @@ export default function MobileCall() {
     if (!stream) return;
     stream.getAudioTracks().forEach((track) => (track.enabled = muted));
     setMuted((value) => !value);
+
+    socket.emit("toggle-media", { 
+      type: "audio", 
+      enabled: !newMutedState, 
+      to: remoteSocketIdRef.current 
+    });
   };
 
   const toggleVideo = () => {
@@ -602,7 +608,25 @@ export default function MobileCall() {
     if (!stream) return;
     stream.getVideoTracks().forEach((track) => (track.enabled = !videoEnabled));
     setVideoEnabled((value) => !value);
+
+    socket.emit("toggle-media", { 
+      type: "video", 
+      enabled: newVideoState, 
+      to: remoteSocketIdRef.current 
+    });
   };
+
+  const [remoteMuted, setRemoteMuted] = useState(false);
+  const [remoteVideoOff, setRemoteVideoOff] = useState(false);
+
+  useEffect(() => {
+    socket.on("toggle-media", ({ type, enabled }) => {
+      if (type === "audio") setRemoteMuted(!enabled);
+      if (type === "video") setRemoteVideoOff(!enabled);
+    });
+
+    return () => socket.off("toggle-media");
+  }, []);
 
   const finishEndCall = () => {
     allowExitRef.current = true;
@@ -744,8 +768,27 @@ export default function MobileCall() {
       ) : null}
       <div className="remote-container">
         <video ref={remoteRef} autoPlay playsInline className="remote" />
+
+        {/* Remote Status Flags */}
+        <div className="status-overlay">
+          {remoteMuted && (
+            <div className="status-icon muted">
+              <img src={micOff} alt="Muted" />
+            </div>
+          )}
+          {remoteVideoOff && (
+            <div className="video-off-placeholder">
+              <p>Camera is off</p>
+            </div>
+          )}
+        </div>
       </div>
-      <video ref={localRef} autoPlay muted playsInline className="local" />
+      
+      {/* Local Status Flags (Optional, if you want to see your own status on your small video) */}
+      <div className="local-container">
+          <video ref={localRef} autoPlay muted playsInline className="local" />
+          {muted && <div className="local-mute-indicator">🔇</div>}
+      </div>
 
       <Controls
         onChat={() => {

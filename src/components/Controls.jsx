@@ -18,20 +18,20 @@ export default function Controls({
 }) {
   return (
     <div className="controls">
-      <button className={muted ? "control-btn-off" : "control-btn"} type="button" onClick={onToggleMute}>
+      <button className={`control-btn ${muted ? "is-off" : "is-on"}`} type="button" onClick={onToggleMute}>
         <img
           src={muted ? micOff : micOn}
           alt="Mute"
         />
-        <span>{muted ? "Mute" : "Unmute"}</span>
+        <span>{muted ? "Unmute" : "Mute"}</span>
       </button>
 
-      <button className={videoEnabled ? "control-btn" : "control-btn-off"} type="button" onClick={onToggleVideo}>
+      <button className={`control-btn ${videoEnabled ? "is-on" : "is-off"}`} type="button" onClick={onToggleVideo}>
         <img
           src={videoEnabled ? videoOn : videoOff}
           alt="Video"
         />
-        <span>{videoEnabled ? "Video Off" : "Video On"}</span>
+        <span>{videoEnabled ? "Stop Video" : "Start Video"}</span>
       </button>
 
       <button className="control-btn control-btn--chat" type="button" onClick={onChat}>
