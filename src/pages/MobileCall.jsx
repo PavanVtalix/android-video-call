@@ -6,6 +6,7 @@ import Controls from "../components/Controls";
 import ChatDrawer from "../components/ChatDrawer";
 import CallFeedbackModal from "../components/CallFeedbackModal";
 import CallNoticeModal from "../components/CallNoticeModal";
+import Timer from "../components/Timer";
 import micOn from "../assets/Microphone on.svg";
 import micOff from "../assets/Microphone off.svg";
 import videoOnIcon from "../assets/Video on.svg";
@@ -141,6 +142,22 @@ function getParticipantName(roomId) {
   return createdName;
 }
 
+function normalizeMediaEnabled(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    return value.toLowerCase() === "true";
+  }
+
+  return Boolean(value);
+}
+
+function hasOwnValue(payload, key) {
+  return Object.prototype.hasOwnProperty.call(payload, key);
+}
+
 export default function MobileCall() {
   const { appointmentId, roomId, socketId } = useParams();
   const localRef = useRef(null);
@@ -168,6 +185,7 @@ export default function MobileCall() {
   const navigate = useNavigate();
   const participantId = useMemo(() => getParticipantId(roomId), [roomId]);
   const participantName = useMemo(() => getParticipantName(roomId), [roomId]);
+  const callStartedAt = useMemo(() => Date.now(), []);
   const reminderShownRef = useRef(false);
   const feedbackShownRef = useRef(false);
   const feedbackSubmittedRef = useRef(false);
@@ -286,6 +304,22 @@ export default function MobileCall() {
       socket.emit("offer", { offer, to: remoteSocketId });
     };
 
+    const syncRemoteTrackState = (remoteStream) => {
+      remoteStream.getAudioTracks().forEach((track) => {
+        setRemoteMuted(track.muted || track.readyState === "ended");
+        track.onmute = () => setRemoteMuted(true);
+        track.onunmute = () => setRemoteMuted(false);
+        track.onended = () => setRemoteMuted(true);
+      });
+
+      remoteStream.getVideoTracks().forEach((track) => {
+        setRemoteVideoOff(track.muted || track.readyState === "ended");
+        track.onmute = () => setRemoteVideoOff(true);
+        track.onunmute = () => setRemoteVideoOff(false);
+        track.onended = () => setRemoteVideoOff(true);
+      });
+    };
+
     const createManagedPeer = (remoteSocketId) => {
       cleanupPeer();
       remoteSocketIdRef.current = remoteSocketId;
@@ -296,6 +330,7 @@ export default function MobileCall() {
           if (remoteRef.current) {
             remoteRef.current.srcObject = remoteStream;
           }
+          syncRemoteTrackState(remoteStream);
           setRemoteConnected(true);
           setCallStatus("Live");
         },
@@ -647,12 +682,59 @@ export default function MobileCall() {
   const [remoteVideoOff, setRemoteVideoOff] = useState(false);
 
   useEffect(() => {
-    socket.on("toggle-media", ({ type, enabled }) => {
-      if (type === "audio") setRemoteMuted(!enabled);
-      if (type === "video") setRemoteVideoOff(!enabled);
-    });
+    const handleRemoteMediaToggle = (payload = {}) => {
+      const type = payload.type || payload.kind || payload.mediaType;
 
-    return () => socket.off("toggle-media");
+      if (type === "audio" || hasOwnValue(payload, "audioEnabled") || hasOwnValue(payload, "muted")) {
+        if (hasOwnValue(payload, "muted")) {
+          setRemoteMuted(normalizeMediaEnabled(payload.muted));
+          return;
+        }
+
+        const enabled = hasOwnValue(payload, "audioEnabled")
+          ? payload.audioEnabled
+          : payload.enabled;
+        if (!hasOwnValue(payload, "audioEnabled") && !hasOwnValue(payload, "enabled")) {
+          return;
+        }
+        setRemoteMuted(!normalizeMediaEnabled(enabled));
+      }
+
+      if (
+        type === "video" ||
+        hasOwnValue(payload, "videoEnabled") ||
+        hasOwnValue(payload, "videoOff") ||
+        hasOwnValue(payload, "cameraOff")
+      ) {
+        if (hasOwnValue(payload, "videoOff")) {
+          setRemoteVideoOff(normalizeMediaEnabled(payload.videoOff));
+          return;
+        }
+
+        if (hasOwnValue(payload, "cameraOff")) {
+          setRemoteVideoOff(normalizeMediaEnabled(payload.cameraOff));
+          return;
+        }
+
+        const enabled = hasOwnValue(payload, "videoEnabled")
+          ? payload.videoEnabled
+          : payload.enabled;
+        if (!hasOwnValue(payload, "videoEnabled") && !hasOwnValue(payload, "enabled")) {
+          return;
+        }
+        setRemoteVideoOff(!normalizeMediaEnabled(enabled));
+      }
+    };
+
+    socket.on("toggle-media", handleRemoteMediaToggle);
+    socket.on("media-toggle", handleRemoteMediaToggle);
+    socket.on("media-state", handleRemoteMediaToggle);
+
+    return () => {
+      socket.off("toggle-media", handleRemoteMediaToggle);
+      socket.off("media-toggle", handleRemoteMediaToggle);
+      socket.off("media-state", handleRemoteMediaToggle);
+    };
   }, []);
 
   const finishEndCall = () => {
@@ -801,6 +883,7 @@ export default function MobileCall() {
             <p className="call-topbar__eyebrow">Patient video session</p>
             <h1 className="call-topbar__title">{participantName}</h1>
           </div>
+          <Timer startTime={callStartedAt} />
           <div className={`call-status call-status--${callStatus.toLowerCase().replace(/\s+/g, "-")}`}>
             <span aria-hidden="true" />
             {callStatus}
@@ -855,11 +938,6 @@ export default function MobileCall() {
             {muted && (
               <span className="local-media-badge" aria-label="Your microphone is muted">
                 <img src={micOff} alt="" />
-              </span>
-            )}
-            {!videoEnabled && (
-              <span className="local-media-badge" aria-label="Your camera is off">
-                <img src={videoOffIcon} alt="" />
               </span>
             )}
           </div>

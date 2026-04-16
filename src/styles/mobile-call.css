@@ -125,6 +125,23 @@ textarea {
   backdrop-filter: blur(18px);
 }
 
+.call-topbar .call-timer {
+  position: static;
+  transform: none;
+  flex: 0 0 auto;
+  min-width: 68px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  z-index: auto;
+}
+
 .call-topbar__eyebrow {
   margin: 0 0 3px;
   color: rgba(247, 251, 250, 0.6);
@@ -756,6 +773,12 @@ textarea {
     min-width: 74px;
     padding: 8px;
     font-size: 11px;
+  }
+
+  .call-topbar .call-timer {
+    min-width: 58px;
+    padding: 8px;
+    font-size: 12px;
   }
 
   .remote-placeholder h2 {
