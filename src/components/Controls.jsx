@@ -18,7 +18,13 @@ export default function Controls({
 }) {
   return (
     <div className="controls">
-      <button className={`control-btn ${muted ? "is-off" : "is-on"}`} type="button" onClick={onToggleMute}>
+      <button
+        className={`control-btn ${muted ? "is-off" : "is-on"}`}
+        type="button"
+        onClick={onToggleMute}
+        aria-pressed={muted}
+        aria-label={muted ? "Unmute microphone" : "Mute microphone"}
+      >
         <img
           src={muted ? micOff : micOn}
           alt="Mute"
@@ -26,15 +32,21 @@ export default function Controls({
         <span>{muted ? "Unmute" : "Mute"}</span>
       </button>
 
-      <button className={`control-btn ${videoEnabled ? "is-on" : "is-off"}`} type="button" onClick={onToggleVideo}>
+      <button
+        className={`control-btn ${videoEnabled ? "is-on" : "is-off"}`}
+        type="button"
+        onClick={onToggleVideo}
+        aria-pressed={!videoEnabled}
+        aria-label={videoEnabled ? "Turn camera off" : "Turn camera on"}
+      >
         <img
           src={videoEnabled ? videoOn : videoOff}
           alt="Video"
         />
-        <span>{videoEnabled ? "Stop Video" : "Start Video"}</span>
+        <span>{videoEnabled ? "Stop" : "Start"}</span>
       </button>
 
-      <button className="control-btn control-btn--chat" type="button" onClick={onChat}>
+      <button className="control-btn control-btn--chat" type="button" onClick={onChat} aria-label="Open chat">
         <span className="control-btn__chat-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M7 10h10" />
@@ -50,7 +62,7 @@ export default function Controls({
         )}
       </button>
 
-      <button className="control-btn end" type="button" onClick={onEnd}>
+      <button className="control-btn end" type="button" onClick={onEnd} aria-label="End call">
         <img src={endCallIcon} alt="End Call" />
         <span>End</span>
       </button>

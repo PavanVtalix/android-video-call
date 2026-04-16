@@ -54,7 +54,7 @@ export default function CallFeedbackModal({
               className={`call-sheet__star ${value <= rating ? "active" : ""}`}
               onClick={() => setRating(value)}
             >
-              {value <= rating ? "★" : "☆"}
+              {value <= rating ? "\u2605" : "\u2606"}
             </button>
           ))}
         </div>

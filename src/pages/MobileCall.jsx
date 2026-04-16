@@ -6,6 +6,7 @@ import Controls from "../components/Controls";
 import ChatDrawer from "../components/ChatDrawer";
 import CallFeedbackModal from "../components/CallFeedbackModal";
 import CallNoticeModal from "../components/CallNoticeModal";
+import micOff from "../assets/Microphone off.svg";
 import "../styles/mobile-call.css";
 
 function getAppointmentApiBaseUrl() {
@@ -155,6 +156,8 @@ export default function MobileCall() {
   const [messages, setMessages] = useState([]);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [callEnded, setCallEnded] = useState(false);
+  const [callStatus, setCallStatus] = useState("Connecting");
+  const [remoteConnected, setRemoteConnected] = useState(false);
   const [sessionMeta, setSessionMeta] = useState(null);
   const [reminderOpen, setReminderOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -240,6 +243,7 @@ export default function MobileCall() {
       if (remoteRef.current) {
         remoteRef.current.srcObject = null;
       }
+      setRemoteConnected(false);
       remoteSocketIdRef.current = null;
       pendingCandidatesRef.current = [];
     };
@@ -289,6 +293,8 @@ export default function MobileCall() {
           if (remoteRef.current) {
             remoteRef.current.srcObject = remoteStream;
           }
+          setRemoteConnected(true);
+          setCallStatus("Live");
         },
         (candidate) => {
           const targetSocketId = remoteSocketIdRef.current;
@@ -299,7 +305,16 @@ export default function MobileCall() {
       );
 
       peer.onconnectionstatechange = async () => {
+        if (peer.connectionState === "connecting") {
+          setCallStatus("Connecting");
+        }
+
+        if (peer.connectionState === "connected") {
+          setCallStatus("Live");
+        }
+
         if (peer.connectionState === "failed" || peer.connectionState === "disconnected") {
+          setCallStatus("Reconnecting");
           try {
             await emitOffer(true);
           } catch (error) {
@@ -374,11 +389,13 @@ export default function MobileCall() {
 
     const handlePeerLeft = () => {
       console.info("[Patient MobileCall] peer-left", { roomId });
+      setCallStatus("Waiting");
       cleanupPeer();
     };
 
     const handleSessionReplaced = () => {
       console.info("[Patient MobileCall] session-replaced", { roomId });
+      setCallStatus("Reconnecting");
       cleanupPeer();
     };
 
@@ -421,10 +438,12 @@ export default function MobileCall() {
 
     const handleWaiting = (payload) => {
       console.info("[Patient MobileCall] waiting", payload);
+      setCallStatus("Waiting");
     };
 
     const handleRoomFull = (payload) => {
       console.warn("[Patient MobileCall] room-full", payload);
+      setCallStatus("Room full");
     };
 
     const handleConnectError = (error) => {
@@ -437,9 +456,11 @@ export default function MobileCall() {
 
     const handleDisconnect = (reason) => {
       console.warn("[Patient MobileCall] disconnect", { reason, roomId });
+      setCallStatus("Disconnected");
     };
 
     const handleConnect = () => {
+      setCallStatus("Joining");
       console.info("[Patient MobileCall] Joining room", {
         appointmentId,
         roomId,
@@ -458,6 +479,7 @@ export default function MobileCall() {
 
     const handleJoinedRoom = (payload) => {
       console.info("[Patient MobileCall] Joined room", payload);
+      setCallStatus("Waiting");
     };
 
     const start = async () => {
@@ -593,12 +615,13 @@ export default function MobileCall() {
   const toggleMute = () => {
     const stream = streamRef.current;
     if (!stream) return;
-    stream.getAudioTracks().forEach((track) => (track.enabled = muted));
-    setMuted((value) => !value);
+    const nextMuted = !muted;
+    stream.getAudioTracks().forEach((track) => (track.enabled = !nextMuted));
+    setMuted(nextMuted);
 
     socket.emit("toggle-media", { 
       type: "audio", 
-      enabled: !newMutedState, 
+      enabled: !nextMuted, 
       to: remoteSocketIdRef.current 
     });
   };
@@ -606,12 +629,13 @@ export default function MobileCall() {
   const toggleVideo = () => {
     const stream = streamRef.current;
     if (!stream) return;
-    stream.getVideoTracks().forEach((track) => (track.enabled = !videoEnabled));
-    setVideoEnabled((value) => !value);
+    const nextVideoEnabled = !videoEnabled;
+    stream.getVideoTracks().forEach((track) => (track.enabled = nextVideoEnabled));
+    setVideoEnabled(nextVideoEnabled);
 
     socket.emit("toggle-media", { 
       type: "video", 
-      enabled: newVideoState, 
+      enabled: nextVideoEnabled, 
       to: remoteSocketIdRef.current 
     });
   };
@@ -769,7 +793,28 @@ export default function MobileCall() {
       <div className="remote-container">
         <video ref={remoteRef} autoPlay playsInline className="remote" />
 
-        {/* Remote Status Flags */}
+        <div className="call-topbar">
+          <div>
+            <p className="call-topbar__eyebrow">Patient video session</p>
+            <h1 className="call-topbar__title">{participantName}</h1>
+          </div>
+          <div className={`call-status call-status--${callStatus.toLowerCase().replace(/\s+/g, "-")}`}>
+            <span aria-hidden="true" />
+            {callStatus}
+          </div>
+        </div>
+
+        {!remoteConnected && !remoteVideoOff ? (
+          <div className="remote-placeholder" aria-live="polite">
+            <div className="remote-placeholder__avatar">DR</div>
+            <p className="remote-placeholder__label">{callStatus}</p>
+            <h2>Waiting for the provider</h2>
+            <p className="remote-placeholder__hint">
+              Keep this screen open. Your camera and microphone are ready.
+            </p>
+          </div>
+        ) : null}
+
         <div className="status-overlay">
           {remoteMuted && (
             <div className="status-icon muted">
@@ -778,16 +823,17 @@ export default function MobileCall() {
           )}
           {remoteVideoOff && (
             <div className="video-off-placeholder">
-              <p>Camera is off</p>
+              <div className="remote-placeholder__avatar">DR</div>
+              <p>Provider camera is off</p>
             </div>
           )}
         </div>
       </div>
       
-      {/* Local Status Flags (Optional, if you want to see your own status on your small video) */}
-      <div className="local-container">
+      <div className="local-container" aria-label="Your preview">
           <video ref={localRef} autoPlay muted playsInline className="local" />
-          {muted && <div className="local-mute-indicator">🔇</div>}
+          <div className="local-container__label">You</div>
+          {muted && <div className="local-mute-indicator">Muted</div>}
       </div>
 
       <Controls

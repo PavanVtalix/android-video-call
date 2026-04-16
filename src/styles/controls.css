@@ -1,18 +1,19 @@
 .controls {
   position: fixed;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
   z-index: 120;
-  width: min(92vw, 420px);
+  width: min(94vw, 420px);
+  min-height: 88px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  padding: 14px;
-  border-radius: 30px;
-  background: rgba(10, 15, 25, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  gap: 10px;
+  padding: 10px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(8, 10, 10, 0.78);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(18px);
 }
 
@@ -20,86 +21,123 @@
   appearance: none;
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.1); /* Neutral Dark */
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 0;
+  min-height: 68px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 10px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.09);
   color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
 }
 
-/* Specific Style for Mic/Video when ON (Green) */
 .control-btn.is-on {
-  background: linear-gradient(180deg, rgba(39, 174, 96, 0.95), rgba(21, 128, 61, 0.95));
+  background: rgba(255, 255, 255, 0.11);
 }
 
-/* Specific Style for Mic/Video when OFF (Red) */
 .control-btn.is-off {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
+  background: #b83d3d;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .control-btn img {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
 }
 
 .control-btn span {
+  max-width: 100%;
+  overflow: hidden;
+  color: inherit;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 800;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .control-btn--chat {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.98), rgba(29, 78, 216, 0.98));
+  background: #1c8d66;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .control-btn__chat-icon {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .control-btn__chat-icon svg {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
 }
 
 .control-btn__badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -7px;
+  right: -7px;
   min-width: 24px;
   height: 24px;
   padding: 0 7px;
   border-radius: 999px;
-  background: #f97316;
-  color: #fff;
-  border: 2px solid rgba(10, 15, 25, 0.92);
-  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.35);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: #f0c05a;
+  color: #1d1710;
+  border: 2px solid rgba(8, 10, 10, 0.92);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
   font-size: 11px;
   font-weight: 900;
   line-height: 1;
 }
 
 .control-btn.end {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.98), rgba(220, 38, 38, 0.98));
+  background: #d64242;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .control-btn:active {
   transform: scale(0.96);
 }
 
+.control-btn:focus-visible {
+  outline: 2px solid #75d6b1;
+  outline-offset: 2px;
+}
+
 .control-btn:disabled {
   opacity: 0.5;
+}
+
+@media (max-width: 380px) {
+  .controls {
+    width: calc(100vw - 16px);
+    min-height: 80px;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .control-btn {
+    min-height: 62px;
+    gap: 6px;
+  }
+
+  .control-btn img,
+  .control-btn__chat-icon,
+  .control-btn__chat-icon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .control-btn span {
+    font-size: 10px;
+  }
 }
