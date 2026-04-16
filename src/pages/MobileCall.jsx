@@ -158,6 +158,35 @@ function hasOwnValue(payload, key) {
   return Object.prototype.hasOwnProperty.call(payload, key);
 }
 
+function readNestedMediaValue(payload, keys) {
+  for (const key of keys) {
+    if (hasOwnValue(payload, key)) {
+      return payload[key];
+    }
+  }
+
+  return undefined;
+}
+
+function getRemoteMediaEventHint(eventName = "") {
+  const normalized = String(eventName).toLowerCase();
+
+  return {
+    isAudio:
+      normalized.includes("audio") ||
+      normalized.includes("mic") ||
+      normalized.includes("microphone"),
+    isVideo: normalized.includes("video") || normalized.includes("camera"),
+    isMedia:
+      normalized.includes("media") ||
+      normalized.includes("audio") ||
+      normalized.includes("mic") ||
+      normalized.includes("microphone") ||
+      normalized.includes("video") ||
+      normalized.includes("camera"),
+  };
+}
+
 export default function MobileCall() {
   const { appointmentId, roomId, socketId } = useParams();
   const localRef = useRef(null);
@@ -657,11 +686,7 @@ export default function MobileCall() {
     stream.getAudioTracks().forEach((track) => (track.enabled = !nextMuted));
     setMuted(nextMuted);
 
-    socket.emit("toggle-media", { 
-      type: "audio", 
-      enabled: !nextMuted, 
-      to: remoteSocketIdRef.current 
-    });
+    emitMediaState("audio", !nextMuted);
   };
 
   const toggleVideo = () => {
@@ -671,69 +696,112 @@ export default function MobileCall() {
     stream.getVideoTracks().forEach((track) => (track.enabled = nextVideoEnabled));
     setVideoEnabled(nextVideoEnabled);
 
-    socket.emit("toggle-media", { 
-      type: "video", 
-      enabled: nextVideoEnabled, 
-      to: remoteSocketIdRef.current 
-    });
+    emitMediaState("video", nextVideoEnabled);
   };
 
   const [remoteMuted, setRemoteMuted] = useState(false);
   const [remoteVideoOff, setRemoteVideoOff] = useState(false);
 
+  const emitMediaState = (type, enabled) => {
+    const payload = {
+      roomId,
+      appointmentId,
+      participantId,
+      role: "patient",
+      type,
+      enabled,
+      audioEnabled: type === "audio" ? enabled : undefined,
+      videoEnabled: type === "video" ? enabled : undefined,
+      muted: type === "audio" ? !enabled : undefined,
+      videoOff: type === "video" ? !enabled : undefined,
+      cameraOff: type === "video" ? !enabled : undefined,
+      to: remoteSocketIdRef.current,
+      from: socket.id,
+    };
+
+    socket.emit("toggle-media", payload);
+    socket.emit("media-state", payload);
+  };
+
   useEffect(() => {
-    const handleRemoteMediaToggle = (payload = {}) => {
-      const type = payload.type || payload.kind || payload.mediaType;
-
-      if (type === "audio" || hasOwnValue(payload, "audioEnabled") || hasOwnValue(payload, "muted")) {
-        if (hasOwnValue(payload, "muted")) {
-          setRemoteMuted(normalizeMediaEnabled(payload.muted));
-          return;
-        }
-
-        const enabled = hasOwnValue(payload, "audioEnabled")
-          ? payload.audioEnabled
-          : payload.enabled;
-        if (!hasOwnValue(payload, "audioEnabled") && !hasOwnValue(payload, "enabled")) {
-          return;
-        }
-        setRemoteMuted(!normalizeMediaEnabled(enabled));
+    const handleRemoteMediaToggle = (eventName = "toggle-media", ...args) => {
+      const firstArg = args[0];
+      const secondArg = args[1];
+      const payload =
+        typeof firstArg === "string"
+          ? { type: firstArg, enabled: secondArg }
+          : firstArg?.data || firstArg?.payload || firstArg?.media || firstArg || {};
+      if (payload.from && payload.from === socket.id) {
+        return;
       }
 
-      if (
-        type === "video" ||
-        hasOwnValue(payload, "videoEnabled") ||
-        hasOwnValue(payload, "videoOff") ||
-        hasOwnValue(payload, "cameraOff")
-      ) {
-        if (hasOwnValue(payload, "videoOff")) {
-          setRemoteVideoOff(normalizeMediaEnabled(payload.videoOff));
-          return;
-        }
+      const eventHint = getRemoteMediaEventHint(eventName);
+      const type = String(payload.type || payload.kind || payload.mediaType || "").toLowerCase();
+      const isAudioEvent = type === "audio" || type === "mic" || type === "microphone" || eventHint.isAudio;
+      const isVideoEvent = type === "video" || type === "camera" || eventHint.isVideo;
 
-        if (hasOwnValue(payload, "cameraOff")) {
-          setRemoteVideoOff(normalizeMediaEnabled(payload.cameraOff));
-          return;
-        }
+      const audioMuted = readNestedMediaValue(payload, ["muted", "audioMuted", "micMuted", "microphoneMuted"]);
+      const genericEnabled = hasOwnValue(payload, "enabled") ? payload.enabled : undefined;
+      const audioEnabled = readNestedMediaValue(payload, ["audioEnabled", "micEnabled", "microphoneEnabled"]);
+      const videoOff = readNestedMediaValue(payload, ["videoOff", "cameraOff", "videoMuted", "cameraMuted"]);
+      const videoEnabledValue = readNestedMediaValue(payload, ["videoEnabled", "cameraEnabled"]);
 
-        const enabled = hasOwnValue(payload, "videoEnabled")
-          ? payload.videoEnabled
-          : payload.enabled;
-        if (!hasOwnValue(payload, "videoEnabled") && !hasOwnValue(payload, "enabled")) {
-          return;
+      if (isAudioEvent || audioMuted !== undefined || audioEnabled !== undefined) {
+        if (audioMuted !== undefined) {
+          setRemoteMuted(normalizeMediaEnabled(audioMuted));
+        } else if (audioEnabled !== undefined) {
+          setRemoteMuted(!normalizeMediaEnabled(audioEnabled));
+        } else if (isAudioEvent && genericEnabled !== undefined) {
+          setRemoteMuted(!normalizeMediaEnabled(genericEnabled));
         }
-        setRemoteVideoOff(!normalizeMediaEnabled(enabled));
+      }
+
+      if (isVideoEvent || videoOff !== undefined || videoEnabledValue !== undefined) {
+        if (videoOff !== undefined) {
+          setRemoteVideoOff(normalizeMediaEnabled(videoOff));
+        } else if (videoEnabledValue !== undefined) {
+          setRemoteVideoOff(!normalizeMediaEnabled(videoEnabledValue));
+        } else if (isVideoEvent && genericEnabled !== undefined) {
+          setRemoteVideoOff(!normalizeMediaEnabled(genericEnabled));
+        }
       }
     };
 
-    socket.on("toggle-media", handleRemoteMediaToggle);
-    socket.on("media-toggle", handleRemoteMediaToggle);
-    socket.on("media-state", handleRemoteMediaToggle);
+    const mediaEvents = [
+      "toggle-media",
+      "media-toggle",
+      "media-state",
+      "media-status",
+      "participant-media-state",
+      "participant-media-updated",
+      "remote-media-state",
+      "user-media-state",
+      "audio-toggle",
+      "video-toggle",
+      "mic-toggle",
+      "microphone-toggle",
+      "camera-toggle",
+    ];
+
+    const listeners = mediaEvents.map((eventName) => {
+      const listener = (...args) => handleRemoteMediaToggle(eventName, ...args);
+      socket.on(eventName, listener);
+      return { eventName, listener };
+    });
+
+    const handleAnyMediaEvent = (eventName, ...args) => {
+      if (!getRemoteMediaEventHint(eventName).isMedia) {
+        return;
+      }
+
+      handleRemoteMediaToggle(eventName, ...args);
+    };
+
+    socket.onAny(handleAnyMediaEvent);
 
     return () => {
-      socket.off("toggle-media", handleRemoteMediaToggle);
-      socket.off("media-toggle", handleRemoteMediaToggle);
-      socket.off("media-state", handleRemoteMediaToggle);
+      listeners.forEach(({ eventName, listener }) => socket.off(eventName, listener));
+      socket.offAny(handleAnyMediaEvent);
     };
   }, []);
 
