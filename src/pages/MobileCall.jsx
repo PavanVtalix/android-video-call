@@ -939,7 +939,7 @@ export default function MobileCall() {
   return (
     <div className={`mobile-call ${chatOpen ? "mobile-call--chat-open" : ""}`}>
       {mediaError ? (
-        <div style={{ color: "#fff", padding: "12px", textAlign: "center" }}>
+        <div style={{ color: "#111827", padding: "12px", textAlign: "center" }}>
           {mediaError}
         </div>
       ) : null}
@@ -984,14 +984,14 @@ export default function MobileCall() {
               <img src={remoteVideoOff ? videoOffIcon : videoOnIcon} alt="" />
             </span>
           </div>
-          {remoteVideoOff && (
-            <div className="video-off-placeholder">
-              <div className="remote-placeholder__avatar">DR</div>
-              <img className="video-off-placeholder__icon" src={videoOffIcon} alt="" />
-              <p>Provider camera is off</p>
-            </div>
-          )}
         </div>
+        {remoteVideoOff && (
+          <div className="video-off-placeholder">
+            <div className="remote-placeholder__avatar">DR</div>
+            <img className="video-off-placeholder__icon" src={videoOffIcon} alt="" />
+            <p>Provider camera is off</p>
+          </div>
+        )}
       </div>
       
       <div className="local-container" aria-label="Your preview">

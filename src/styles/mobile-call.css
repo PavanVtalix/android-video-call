@@ -8,8 +8,8 @@ body,
   margin: 0;
   width: 100%;
   min-height: 100%;
-  background: #090b0b;
-  color: #f7fbfa;
+  background: #ffffff;
+  color: #111827;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -24,22 +24,34 @@ textarea {
   width: 100vw;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #090b0b;
+  --call-side-space: 24px;
+  --call-gap: 8px;
+  --video-panel-height: min(395px, calc((100dvh - 158px) / 2));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--call-gap);
+  padding: 24px 0 calc(env(safe-area-inset-bottom, 0px) + 38px);
+  background: #ffffff;
+  border-radius: 32px;
   overflow: hidden;
   touch-action: manipulation;
 }
 
 .remote-container {
   position: relative;
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  width: calc(100% - (var(--call-side-space) * 2));
+  max-width: 430px;
+  height: var(--video-panel-height);
+  min-height: 220px;
   display: flex;
   align-items: stretch;
   justify-content: center;
   padding: 0;
+  overflow: hidden;
+  border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(9, 11, 11, 0.08), rgba(9, 11, 11, 0.88)),
+    linear-gradient(180deg, rgba(9, 11, 11, 0.05), rgba(9, 11, 11, 0.26)),
     #111716;
 }
 
@@ -60,7 +72,7 @@ textarea {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 96px 26px 172px;
+  padding: 72px 24px 28px;
   text-align: center;
   background:
     linear-gradient(180deg, rgba(12, 16, 15, 0.58), rgba(8, 10, 10, 0.94)),
@@ -68,8 +80,8 @@ textarea {
 }
 
 .remote-placeholder__avatar {
-  width: 88px;
-  height: 88px;
+  width: 72px;
+  height: 72px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
@@ -94,7 +106,7 @@ textarea {
   margin: 0;
   max-width: 320px;
   color: #ffffff;
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1.12;
 }
 
@@ -107,17 +119,17 @@ textarea {
 }
 
 .call-topbar {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 14px);
-  left: 14px;
-  right: 14px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
   z-index: 40;
-  min-height: 64px;
+  min-height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 12px 12px 14px;
+  padding: 9px 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   background: rgba(8, 10, 10, 0.72);
@@ -129,8 +141,8 @@ textarea {
   position: static;
   transform: none;
   flex: 0 0 auto;
-  min-width: 68px;
-  padding: 8px 10px;
+  min-width: 60px;
+  padding: 7px 8px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
@@ -145,7 +157,7 @@ textarea {
 .call-topbar__eyebrow {
   margin: 0 0 3px;
   color: rgba(247, 251, 250, 0.6);
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -154,22 +166,22 @@ textarea {
 .call-topbar__title {
   margin: 0;
   color: #fff;
-  font-size: 17px;
+  font-size: 13px;
   line-height: 1.15;
 }
 
 .call-status {
   flex: 0 0 auto;
-  min-width: 86px;
+  min-width: 68px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 9px 10px;
+  padding: 7px 8px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   color: #f7fbfa;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -197,9 +209,9 @@ textarea {
 }
 
 .status-overlay {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 92px);
-  right: 14px;
+  position: absolute;
+  top: 72px;
+  right: 10px;
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -211,8 +223,8 @@ textarea {
   z-index: 55;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 6px;
+  padding: 6px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(8, 10, 10, 0.72);
@@ -221,8 +233,8 @@ textarea {
 }
 
 .remote-media-icon {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
@@ -239,8 +251,8 @@ textarea {
 }
 
 .remote-media-icon img {
-  width: 21px;
-  height: 21px;
+  width: 18px;
+  height: 18px;
 }
 
 .status-icon {
@@ -281,7 +293,7 @@ textarea {
 }
 
 .video-off-placeholder {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 20;
   display: flex;
@@ -289,7 +301,7 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 96px 24px 172px;
+  padding: 82px 24px 28px;
   background: #101614;
   color: #fff;
   font-size: 18px;
@@ -306,17 +318,19 @@ textarea {
 }
 
 .local-container {
-  position: fixed;
-  right: 14px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 118px);
+  position: relative;
+  right: auto;
+  bottom: auto;
   z-index: 90;
-  width: 116px;
-  aspect-ratio: 3 / 4;
+  width: calc(100% - (var(--call-side-space) * 2));
+  max-width: 430px;
+  height: var(--video-panel-height);
+  min-height: 220px;
   overflow: hidden;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
   background: #151b1a;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  box-shadow: none;
 }
 
 .local {
@@ -387,7 +401,7 @@ textarea {
 }
 
 .mobile-call--chat-open .local-container {
-  top: calc(env(safe-area-inset-top, 0px) + 92px);
+  top: auto;
   bottom: auto;
 }
 
@@ -739,16 +753,8 @@ textarea {
 }
 
 @media (min-width: 720px) {
-  .call-topbar {
-    left: 50%;
-    right: auto;
-    width: min(680px, calc(100vw - 28px));
-    transform: translateX(-50%);
-  }
-
-  .local-container {
-    width: 144px;
-    right: max(22px, calc((100vw - 680px) / 2));
+  .mobile-call {
+    --video-panel-height: min(395px, calc((100dvh - 158px) / 2));
   }
 
   .chat-drawer {
@@ -760,6 +766,12 @@ textarea {
 }
 
 @media (max-width: 380px) {
+  .mobile-call {
+    --call-side-space: 18px;
+    --video-panel-height: min(395px, calc((100dvh - 144px) / 2));
+    padding-top: 18px;
+  }
+
   .call-topbar {
     min-height: 58px;
     padding: 10px;
@@ -783,11 +795,6 @@ textarea {
 
   .remote-placeholder h2 {
     font-size: 24px;
-  }
-
-  .local-container {
-    width: 104px;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 108px);
   }
 
   .chat-drawer {
