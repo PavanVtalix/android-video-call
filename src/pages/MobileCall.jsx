@@ -6,7 +6,9 @@ import Controls from "../components/Controls";
 import ChatDrawer from "../components/ChatDrawer";
 import CallFeedbackModal from "../components/CallFeedbackModal";
 import CallNoticeModal from "../components/CallNoticeModal";
+import micOn from "../assets/Microphone on.svg";
 import micOff from "../assets/Microphone off.svg";
+import videoOnIcon from "../assets/Video on.svg";
 import videoOffIcon from "../assets/Video off.svg";
 import "../styles/mobile-call.css";
 
@@ -817,18 +819,20 @@ export default function MobileCall() {
         ) : null}
 
         <div className="status-overlay">
-          {remoteMuted && (
-            <div className="status-icon status-icon--muted">
-              <img src={micOff} alt="" />
-              <span>Provider muted</span>
-            </div>
-          )}
-          {remoteVideoOff && (
-            <div className="status-icon status-icon--video-off">
-              <img src={videoOffIcon} alt="" />
-              <span>Provider camera off</span>
-            </div>
-          )}
+          <div className="remote-media-card" aria-label="Provider media status">
+            <span
+              className={`remote-media-icon ${remoteMuted ? "is-off" : "is-on"}`}
+              aria-label={remoteMuted ? "Provider microphone is muted" : "Provider microphone is on"}
+            >
+              <img src={remoteMuted ? micOff : micOn} alt="" />
+            </span>
+            <span
+              className={`remote-media-icon ${remoteVideoOff ? "is-off" : "is-on"}`}
+              aria-label={remoteVideoOff ? "Provider camera is off" : "Provider camera is on"}
+            >
+              <img src={remoteVideoOff ? videoOffIcon : videoOnIcon} alt="" />
+            </span>
+          </div>
           {remoteVideoOff && (
             <div className="video-off-placeholder">
               <div className="remote-placeholder__avatar">DR</div>

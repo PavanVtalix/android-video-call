@@ -189,6 +189,43 @@ textarea {
   gap: 10px;
 }
 
+.remote-media-card {
+  position: relative;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 10, 10, 0.72);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+}
+
+.remote-media-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.remote-media-icon.is-on {
+  background: rgba(35, 201, 121, 0.2);
+}
+
+.remote-media-icon.is-off {
+  background: rgba(214, 66, 66, 0.82);
+}
+
+.remote-media-icon img {
+  width: 21px;
+  height: 21px;
+}
+
 .status-icon {
   position: relative;
   z-index: 35;
