@@ -7,6 +7,7 @@ import ChatDrawer from "../components/ChatDrawer";
 import CallFeedbackModal from "../components/CallFeedbackModal";
 import CallNoticeModal from "../components/CallNoticeModal";
 import micOff from "../assets/Microphone off.svg";
+import videoOffIcon from "../assets/Video off.svg";
 import "../styles/mobile-call.css";
 
 function getAppointmentApiBaseUrl() {
@@ -817,13 +818,21 @@ export default function MobileCall() {
 
         <div className="status-overlay">
           {remoteMuted && (
-            <div className="status-icon muted">
-              <img src={micOff} alt="Muted" />
+            <div className="status-icon status-icon--muted">
+              <img src={micOff} alt="" />
+              <span>Provider muted</span>
+            </div>
+          )}
+          {remoteVideoOff && (
+            <div className="status-icon status-icon--video-off">
+              <img src={videoOffIcon} alt="" />
+              <span>Provider camera off</span>
             </div>
           )}
           {remoteVideoOff && (
             <div className="video-off-placeholder">
               <div className="remote-placeholder__avatar">DR</div>
+              <img className="video-off-placeholder__icon" src={videoOffIcon} alt="" />
               <p>Provider camera is off</p>
             </div>
           )}
@@ -832,8 +841,24 @@ export default function MobileCall() {
       
       <div className="local-container" aria-label="Your preview">
           <video ref={localRef} autoPlay muted playsInline className="local" />
+          {!videoEnabled && (
+            <div className="local-video-off" aria-label="Your camera is off">
+              <img src={videoOffIcon} alt="" />
+            </div>
+          )}
           <div className="local-container__label">You</div>
-          {muted && <div className="local-mute-indicator">Muted</div>}
+          <div className="local-media-badges">
+            {muted && (
+              <span className="local-media-badge" aria-label="Your microphone is muted">
+                <img src={micOff} alt="" />
+              </span>
+            )}
+            {!videoEnabled && (
+              <span className="local-media-badge" aria-label="Your camera is off">
+                <img src={videoOffIcon} alt="" />
+              </span>
+            )}
+          </div>
       </div>
 
       <Controls

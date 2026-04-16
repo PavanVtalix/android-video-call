@@ -49,7 +49,7 @@ textarea {
   width: 100%;
   height: 100%;
   background: #050606;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .remote-placeholder {
@@ -189,23 +189,41 @@ textarea {
   gap: 10px;
 }
 
-.status-icon.muted {
-  width: 42px;
-  height: 42px;
-  padding: 9px;
+.status-icon {
+  position: relative;
+  z-index: 35;
+  min-height: 42px;
+  max-width: 190px;
+  padding: 9px 11px;
   border-radius: 8px;
   display: flex;
   align-items: center;
+  gap: 8px;
   justify-content: center;
-  background: rgba(229, 57, 53, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
   backdrop-filter: blur(14px);
+}
+
+.status-icon--muted,
+.status-icon--video-off {
+  background: rgba(8, 10, 10, 0.72);
 }
 
 .status-icon img {
   width: 22px;
   height: 22px;
+  flex: 0 0 auto;
+}
+
+.status-icon span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .video-off-placeholder {
@@ -223,6 +241,14 @@ textarea {
   font-size: 18px;
   font-weight: 800;
   text-align: center;
+}
+
+.video-off-placeholder__icon {
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .local-container {
@@ -246,8 +272,26 @@ textarea {
   object-fit: cover;
 }
 
-.local-container__label,
-.local-mute-indicator {
+.local-video-off {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, rgba(14, 18, 17, 0.78), rgba(9, 11, 11, 0.9)),
+    #151b1a;
+}
+
+.local-video-off img {
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.local-container__label {
   position: absolute;
   left: 8px;
   border-radius: 8px;
@@ -263,10 +307,29 @@ textarea {
   padding: 5px 8px;
 }
 
-.local-mute-indicator {
+.local-media-badges {
+  position: absolute;
   top: 8px;
-  padding: 5px 7px;
-  color: #ffd9d9;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.local-media-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 10, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+.local-media-badge img {
+  width: 17px;
+  height: 17px;
 }
 
 .mobile-call--chat-open .local-container {
@@ -285,11 +348,11 @@ textarea {
   flex-direction: column;
   overflow: hidden;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(13, 17, 16, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(13, 17, 16, 0.38);
   color: #fff;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.52);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(8px);
 }
 
 .chat-drawer__header {
@@ -299,7 +362,8 @@ textarea {
   justify-content: space-between;
   gap: 12px;
   padding: 14px 14px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 10, 10, 0.28);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .chat-drawer__eyebrow {
@@ -342,7 +406,7 @@ textarea {
   margin: auto 0;
   padding: 16px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(8, 10, 10, 0.34);
   color: rgba(247, 251, 250, 0.72);
   text-align: center;
   line-height: 1.5;
@@ -372,11 +436,11 @@ textarea {
 }
 
 .chat-drawer__message.mine .chat-drawer__bubble {
-  background: #1c8d66;
+  background: rgba(28, 141, 102, 0.78);
 }
 
 .chat-drawer__message.theirs .chat-drawer__bubble {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(8, 10, 10, 0.48);
 }
 
 .chat-drawer__time {
@@ -388,7 +452,8 @@ textarea {
   display: flex;
   gap: 10px;
   padding: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 10, 10, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .chat-drawer__input input {
@@ -398,7 +463,7 @@ textarea {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   padding: 12px 13px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(8, 10, 10, 0.44);
   color: #fff;
   font-size: 15px;
   outline: none;
